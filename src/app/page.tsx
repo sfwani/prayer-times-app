@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { format, parse, isBefore } from 'date-fns';
-import PrayerCard from './components/PrayerCard';
 import CalculationMethodSelector from './components/CalculationMethodSelector';
 import CountdownTimer from './components/CountdownTimer';
 import { 
@@ -10,12 +9,10 @@ import {
   PrayerName, 
   CalculationMethod,
   CalculationMethodKey,
-  CalculationMethodConfig,
   CALCULATION_METHODS,
   CALCULATION_METHOD_CONFIGS,
   AsrMethod,
   AsrMethodKey,
-  AsrMethodConfig,
   ASR_METHODS,
   ASR_METHOD_CONFIGS,
   CALCULATION_METHOD_VALUES,
@@ -184,7 +181,7 @@ export default function Home() {
         },
         error: null
       }));
-    } catch (err) {
+    } catch (error) {
       setState(prev => ({
         ...prev,
         error: {
