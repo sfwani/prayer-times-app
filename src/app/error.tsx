@@ -7,6 +7,8 @@ export default function Error({
   error: Error;
   reset: () => void;
 }) {
+  console.error('Application error:', error);
+
   return (
     <div className="flex flex-col items-center justify-center p-8">
       <h2 className="text-xl text-red-400 mb-4">Something went wrong!</h2>

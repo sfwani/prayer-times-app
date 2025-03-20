@@ -1,4 +1,4 @@
-import { Location, PrayerTimesResponse } from '../types';
+import { PrayerTimesResponse } from '../types';
 
 interface PrayerTimesParams {
   latitude: number;
