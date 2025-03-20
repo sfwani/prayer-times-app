@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { format } from 'date-fns';
+import { format, parse, isBefore } from 'date-fns';
 import PrayerCard from './components/PrayerCard';
 import CalculationMethodSelector from './components/CalculationMethodSelector';
+import CountdownTimer from './components/CountdownTimer';
 import { 
   PrayerTimes, 
   PrayerName, 
@@ -43,6 +44,11 @@ interface AppState {
   prayerTimes: PrayerTimes | null;
   hijriDate: string | null;
   cityInfo: Pick<LocationInfo, 'city' | 'state'> | null;
+  timezone: string | null;
+  nextPrayer: {
+    name: string;
+    time: string;
+  } | null;
 }
 
 const initialState: AppState = {
@@ -53,7 +59,34 @@ const initialState: AppState = {
   location: null,
   prayerTimes: null,
   hijriDate: null,
-  cityInfo: null
+  cityInfo: null,
+  timezone: null,
+  nextPrayer: null
+};
+
+const getNextPrayer = (prayerTimes: PrayerTimes): { name: string; time: string } | null => {
+  const now = new Date();
+  const prayers = Object.entries(prayerTimes);
+  const todayPrayers = prayers.map(([name, time]) => ({
+    name: name,
+    time: parse(time, 'HH:mm', now)
+  }));
+
+  // Find the next prayer
+  const nextPrayer = todayPrayers.find(prayer => isBefore(now, prayer.time));
+  
+  if (nextPrayer) {
+    return {
+      name: nextPrayer.name,
+      time: format(nextPrayer.time, 'HH:mm')
+    };
+  }
+
+  // If no next prayer today, return first prayer of next day
+  return {
+    name: todayPrayers[0].name,
+    time: format(todayPrayers[0].time, 'HH:mm')
+  };
 };
 
 export default function Home() {
@@ -82,6 +115,15 @@ export default function Home() {
 
       const apiResponse = data as CombinedApiResponse;
       
+      const nextPrayer = getNextPrayer({
+        fajr: apiResponse.prayerTimes.timings.Fajr,
+        sunrise: apiResponse.prayerTimes.timings.Sunrise,
+        dhuhr: apiResponse.prayerTimes.timings.Dhuhr,
+        asr: apiResponse.prayerTimes.timings.Asr,
+        maghrib: apiResponse.prayerTimes.timings.Maghrib,
+        isha: apiResponse.prayerTimes.timings.Isha
+      });
+
       setState(prev => ({
         ...prev,
         error: null,
@@ -99,7 +141,9 @@ export default function Home() {
         cityInfo: {
           city: apiResponse.location.city,
           state: apiResponse.location.state
-        }
+        },
+        timezone: apiResponse.prayerTimes.meta.timezone,
+        nextPrayer
       }));
     } catch (err) {
       setState(prev => ({
@@ -162,14 +206,27 @@ export default function Home() {
                 <p className="mb-2">
                   {format(new Date(), 'EEEE, MMMM d, yyyy')} | {format(new Date(), 'h:mm a')} {state.hijriDate && `| ${state.hijriDate}`}
                 </p>
-                <p className="mb-4">
+                <p className="mb-2">
                   {state.location && state.cityInfo && (
                     <>
                       {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''} | {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
                     </>
                   )}
                 </p>
+                {state.timezone && (
+                  <p className="text-sm text-gray-500">
+                    Timezone: {state.timezone}
+                  </p>
+                )}
               </div>
+
+              {state.nextPrayer && (
+                <CountdownTimer
+                  targetTime={state.nextPrayer.time}
+                  prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
+                />
+              )}
+
               {state.prayerTimes && (
                 <div className="space-y-6">
                   {Object.entries(state.prayerTimes).map(([prayer, time]) => (
