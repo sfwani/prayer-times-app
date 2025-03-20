@@ -21,6 +21,7 @@ import {
   CombinedApiResponse,
   ApiError
 } from './types';
+import LocationSelector from './components/LocationSelector';
 
 // Move constants outside component
 const PRAYER_NAMES: Record<string, PrayerName> = {
@@ -285,23 +286,15 @@ export default function Home() {
 
         {/* Settings Section */}
         <div className="w-full space-y-4">
-          <button 
-            onClick={handleUseCurrentLocation}
-            className="w-full bg-[#6B7E50] text-white py-3 px-4 rounded-lg hover:bg-[#5C6C44] transition-colors shadow-lg"
-          >
-            {state.location && state.cityInfo ? (
-              <div className="text-center">
-                <div className="text-lg font-[400] tracking-[0.02em]">
-                  {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''}
-                </div>
-                <div className="text-sm text-[#DFE9D2] font-[300] tracking-[0.02em]">
-                  {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
-                </div>
-              </div>
-            ) : (
-              <span className="text-lg font-light tracking-wide">Use Current Location</span>
-            )}
-          </button>
+          <LocationSelector
+            onLocationChange={useCallback((location) => {
+              setState(prev => ({
+                ...prev,
+                location,
+                error: null
+              }));
+            }, [])}
+          />
 
           <button
             onClick={() => setState(prev => ({ ...prev, showSettings: !prev.showSettings }))}
