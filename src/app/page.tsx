@@ -148,12 +148,12 @@ export default function Home() {
         timezone: apiResponse.prayerTimes.meta.timezone,
         nextPrayer
       }));
-    } catch (error) {
-      console.error('Failed to fetch prayer times:', error);
+    } catch (_error) {
+      console.error('Failed to fetch prayer times:', _error);
       setState(prev => ({
         ...prev,
         error: {
-          message: error instanceof Error ? error.message : 'Failed to fetch prayer times',
+          message: _error instanceof Error ? _error.message : 'Failed to fetch prayer times',
           code: 'FETCH_ERROR',
           status: 500
         }
@@ -181,7 +181,7 @@ export default function Home() {
         },
         error: null
       }));
-    } catch (error) {
+    } catch (_error) {
       setState(prev => ({
         ...prev,
         error: {
