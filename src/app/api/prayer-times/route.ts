@@ -4,12 +4,6 @@ import { PrayerTimesResponse, LocationInfo } from '@/app/types';
 const prayerTimesCache = new Map<string, PrayerTimesResponse>();
 const geocodingCache = new Map<string, LocationInfo>();
 
-// Cleanup function for testing purposes (non-exported)
-function clearCaches() {
-  prayerTimesCache.clear();
-  geocodingCache.clear();
-}
-
 async function getGeocodingData(latitude: number, longitude: number): Promise<LocationInfo> {
   const cacheKey = `${latitude},${longitude}`;
   
