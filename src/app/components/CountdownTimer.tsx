@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { differenceInSeconds, parse } from 'date-fns';
+import { differenceInSeconds, parse, format } from 'date-fns';
 
 interface CountdownTimerProps {
   targetTime: string;
@@ -39,10 +39,22 @@ export default function CountdownTimer({ targetTime, prayerName }: CountdownTime
     return () => clearInterval(timer);
   }, [targetTime]);
 
+  // Convert 24h time to 12h format
+  const formattedTime = format(parse(targetTime, 'HH:mm', new Date()), 'h:mm a');
+
   return (
-    <div className="text-center bg-[#2D333B] rounded-lg p-4 mb-4">
-      <p className="text-gray-400 mb-2">Time until {prayerName}</p>
-      <div className="text-2xl font-mono text-white">{timeLeft}</div>
+    <div className="text-center bg-[#2D333B] rounded-lg p-8">
+      <div className="space-y-6">
+        <div>
+          <span className="text-2xl text-gray-400 tracking-wider font-light capitalize">{prayerName} in</span>
+        </div>
+        <div className="font-mono text-5xl tracking-wider text-[#9AB17D] font-light">
+          {timeLeft}
+        </div>
+        <div className="text-sm text-gray-500 tracking-wide font-light">
+          at {formattedTime}
+        </div>
+      </div>
     </div>
   );
 } 

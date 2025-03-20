@@ -89,6 +89,12 @@ const getNextPrayer = (prayerTimes: PrayerTimes): { name: string; time: string }
   };
 };
 
+// Helper function to convert 24h to 12h format
+const to12HourFormat = (time: string): string => {
+  const parsed = parse(time, 'HH:mm', new Date());
+  return format(parsed, 'h:mm a');
+};
+
 export default function Home() {
   const [state, setState] = useState<AppState>(initialState);
 
@@ -194,8 +200,6 @@ export default function Home() {
       <div className="max-w-2xl mx-auto flex flex-col items-center space-y-8">
         {/* Prayer Times Display */}
         <div className="w-full bg-[#1C2128] rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-6">Today's Prayer Times</h1>
-          
           {state.error ? (
             <p className="text-red-400 text-center">{state.error.message}</p>
           ) : !state.location ? (
@@ -221,8 +225,8 @@ export default function Home() {
                           : 'hover:bg-[#2D333B]'
                       }`}
                     >
-                      <span className="text-xl text-gray-200">{PRAYER_NAMES[prayer.toLowerCase()]?.latin}</span>
-                      <span className="text-xl text-gray-400 text-center font-mono">{time}</span>
+                      <span className="text-xl text-gray-200 font-light tracking-wide">{PRAYER_NAMES[prayer.toLowerCase()]?.latin}</span>
+                      <span className="text-xl text-gray-400 text-center font-light tracking-wider">{to12HourFormat(time)}</span>
                       <span className="text-xl text-gray-200 text-right font-arabic">{PRAYER_NAMES[prayer.toLowerCase()]?.arabic}</span>
                     </div>
                   ))}
@@ -230,14 +234,14 @@ export default function Home() {
               )}
 
               <div className="text-center pt-4 border-t border-[#2D333B]">
-                <div className="text-2xl font-mono text-white mb-2">
+                <div className="text-2xl font-light text-white mb-2 tracking-wider">
                   {format(new Date(), 'h:mm a')}
                 </div>
-                <p className="text-sm text-gray-400">
+                <p className="text-sm text-gray-400 tracking-wide font-light">
                   {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
                 </p>
                 {state.timezone && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 mt-1 tracking-wide font-light">
                     {state.timezone.replace('_', ' ')}
                   </p>
                 )}
@@ -250,28 +254,27 @@ export default function Home() {
         <div className="w-full space-y-4">
           <button 
             onClick={handleUseCurrentLocation}
-            className="w-full bg-[#1A6ED8] text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors shadow-lg"
+            className="w-full bg-[#6B7E50] text-white py-3 px-4 rounded-lg hover:bg-[#5C6C44] transition-colors shadow-lg"
           >
             {state.location && state.cityInfo ? (
               <div className="text-center">
-                <div className="text-lg">
+                <div className="text-lg font-light tracking-wide">
                   {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''}
                 </div>
-                <div className="text-sm text-blue-200">
+                <div className="text-sm text-[#DFE9D2] font-light tracking-wide">
                   {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
                 </div>
               </div>
             ) : (
-              <span className="text-lg">Use Current Location</span>
+              <span className="text-lg font-light tracking-wide">Use Current Location</span>
             )}
           </button>
 
           <button
             onClick={() => setState(prev => ({ ...prev, showSettings: !prev.showSettings }))}
-            className="flex items-center justify-center w-full px-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors rounded-lg hover:bg-[#2D333B]"
+            className="flex items-center justify-center w-full px-4 py-2 text-sm text-[#9AB17D] hover:text-[#B5C99A] transition-colors rounded-lg hover:bg-[#2D333B] font-light tracking-wide"
           >
-            <span>Using: {CALCULATION_METHOD_CONFIGS[state.calculationMethod as CalculationMethodKey].name}</span>
-            <span className="text-gray-500 ml-2">({ASR_METHOD_CONFIGS[state.asrMethod as AsrMethodKey].name})</span>
+            {CALCULATION_METHOD_CONFIGS[state.calculationMethod as CalculationMethodKey].name} • {ASR_METHOD_CONFIGS[state.asrMethod as AsrMethodKey].name}
           </button>
 
           {state.showSettings && (
