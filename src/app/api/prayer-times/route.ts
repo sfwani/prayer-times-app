@@ -1,8 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrayerTimesResponse, LocationInfo } from '@/app/types';
 
-// Cache prayer times for 1 hour
-const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 const prayerTimesCache = new Map<string, PrayerTimesResponse>();
 const geocodingCache = new Map<string, LocationInfo>();
 

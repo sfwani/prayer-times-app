@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { format, parse, isBefore } from 'date-fns';
+import { format, parse } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import CalculationMethodSelector from './components/CalculationMethodSelector';
 import CountdownTimer from './components/CountdownTimer';
@@ -196,61 +196,6 @@ export default function Home() {
       fetchPrayerTimes(state.location.latitude, state.location.longitude);
     }
   }, [state.location, fetchPrayerTimes]);
-
-  const handleUseCurrentLocation = async () => {
-    try {
-      if (!navigator.geolocation) {
-        throw new Error('Geolocation is not supported by your browser');
-      }
-
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          (error) => {
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                reject(new Error('Location permission denied. Please enable location services in your browser settings.'));
-                break;
-              case error.POSITION_UNAVAILABLE:
-                reject(new Error('Location information is unavailable. Please try again.'));
-                break;
-              case error.TIMEOUT:
-                reject(new Error('Location request timed out. Please try again.'));
-                break;
-              default:
-                reject(new Error('An unknown error occurred while getting location.'));
-            }
-          },
-          {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 0
-          }
-        );
-      });
-      
-      setState(prev => ({
-        ...prev,
-        location: {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
-        },
-        error: null
-      }));
-    } catch (error) {
-      console.error('Location error:', error instanceof Error ? error.message : 'Unknown error');
-      setState(prev => ({
-        ...prev,
-        error: {
-          message: error instanceof Error 
-            ? error.message 
-            : 'Error getting location. Please enable location services.',
-          code: 'GEOLOCATION_ERROR',
-          status: 400
-        }
-      }));
-    }
-  };
 
   return (
     <div className="min-h-screen bg-[#0D1117] text-white p-8" style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}>
