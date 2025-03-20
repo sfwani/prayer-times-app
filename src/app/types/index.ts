@@ -17,9 +17,10 @@ export interface PrayerTimes {
 export interface LocationInfo {
   city: string;
   state: string;
-  country: string;
-  latitude: number;
-  longitude: number;
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 // API Response Types

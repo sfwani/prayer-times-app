@@ -98,7 +98,7 @@ export default function Home() {
   const fetchPrayerTimes = useCallback(async (latitude: number, longitude: number) => {
     try {
       const response = await fetch(
-        `/api/prayer-times?lat=${latitude}&lng=${longitude}&method=${CALCULATION_METHOD_VALUES[state.calculationMethod as CalculationMethodKey]}&school=${ASR_METHOD_VALUES[state.asrMethod as AsrMethodKey]}`
+        `/api/prayer-times?latitude=${latitude}&longitude=${longitude}&method=${CALCULATION_METHOD_VALUES[state.calculationMethod as CalculationMethodKey]}&school=${ASR_METHOD_VALUES[state.asrMethod as AsrMethodKey]}`
       );
       
       const data: CombinedApiResponse | ApiError = await response.json();
