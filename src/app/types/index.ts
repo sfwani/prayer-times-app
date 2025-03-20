@@ -13,14 +13,22 @@ export interface PrayerTimes {
   isha: string;
 }
 
+export interface PrayerTime {
+  name: string;
+  time: string;
+  isNext?: boolean;
+}
+
 // Location Types
+export interface Location {
+  latitude: number;
+  longitude: number;
+}
+
 export interface LocationInfo {
   city: string;
   state: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
+  coordinates: Location;
 }
 
 // API Response Types
