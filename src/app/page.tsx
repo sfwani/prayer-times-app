@@ -194,7 +194,7 @@ export default function Home() {
       <div className="max-w-2xl mx-auto flex flex-col items-center space-y-8">
         {/* Prayer Times Display */}
         <div className="w-full bg-[#1C2128] rounded-lg p-8">
-          <h1 className="text-3xl font-bold text-center mb-4">Today's Prayer Times</h1>
+          <h1 className="text-3xl font-bold text-center mb-6">Today's Prayer Times</h1>
           
           {state.error ? (
             <p className="text-red-400 text-center">{state.error.message}</p>
@@ -202,31 +202,17 @@ export default function Home() {
             <p className="text-gray-400 text-center">Please select your location to view prayer times</p>
           ) : (
             <>
-              <div className="text-center mb-6">
-                <div className="bg-[#2D333B] rounded-lg p-6 mb-4">
-                  <div className="text-4xl font-mono text-white mb-2">
-                    {format(new Date(), 'h:mm a')}
-                  </div>
-                  <p className="text-gray-400">
-                    {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
-                  </p>
-                  {state.timezone && (
-                    <p className="text-sm text-gray-500 mt-1">
-                      Timezone: {state.timezone}
-                    </p>
-                  )}
-                </div>
-
-                {state.nextPrayer && (
+              {state.nextPrayer && (
+                <div className="mb-8">
                   <CountdownTimer
                     targetTime={state.nextPrayer.time}
                     prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
                   />
-                )}
-              </div>
+                </div>
+              )}
 
               {state.prayerTimes && (
-                <div className="space-y-3">
+                <div className="space-y-3 mb-8">
                   {Object.entries(state.prayerTimes).map(([prayer, time]) => (
                     <div key={prayer} 
                       className={`grid grid-cols-3 items-center p-3 rounded-lg transition-colors ${
@@ -242,6 +228,20 @@ export default function Home() {
                   ))}
                 </div>
               )}
+
+              <div className="text-center pt-4 border-t border-[#2D333B]">
+                <div className="text-2xl font-mono text-white mb-2">
+                  {format(new Date(), 'h:mm a')}
+                </div>
+                <p className="text-sm text-gray-400">
+                  {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
+                </p>
+                {state.timezone && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    {state.timezone.replace('_', ' ')}
+                  </p>
+                )}
+              </div>
             </>
           )}
         </div>
