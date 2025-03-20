@@ -28,8 +28,8 @@ export interface Location {
 export interface LocationInfo {
   city: string;
   state: string;
-  country: string;
   timezone: string;
+  country?: string;
 }
 
 // API Response Types

@@ -1,69 +1,61 @@
 import { NextResponse } from 'next/server';
-import { LocationInfo, PrayerTimesResponse, GeocodingAddress } from '../../types';
+import { PrayerTimesResponse, LocationInfo } from '@/app/types';
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-
-// Cache for geocoding data
-const geocodingCache = new Map<string, CacheEntry<LocationInfo>>();
+// Cache prayer times for 1 hour
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour in milliseconds
 const prayerTimesCache = new Map<string, PrayerTimesResponse>();
+const geocodingCache = new Map<string, LocationInfo>();
 
-const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-
-function cleanupCache() {
-  const now = Date.now();
-  for (const [key, entry] of geocodingCache.entries()) {
-    if (now - entry.timestamp > CACHE_DURATION) {
-      geocodingCache.delete(key);
-    }
-  }
+// Cleanup function for testing purposes
+export function clearCaches() {
+  prayerTimesCache.clear();
+  geocodingCache.clear();
 }
 
 async function getGeocodingData(latitude: number, longitude: number): Promise<LocationInfo> {
   const cacheKey = `${latitude},${longitude}`;
   
-  // Check cache first
-  const cachedData = geocodingCache.get(cacheKey);
-  if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
-    return cachedData.data;
+  if (geocodingCache.has(cacheKey)) {
+    return geocodingCache.get(cacheKey)!;
   }
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+      `https://nominatim.openstreetmap.org/reverse?` +
+      new URLSearchParams({
+        lat: latitude.toString(),
+        lon: longitude.toString(),
+        format: 'json',
+        'accept-language': 'en'
+      }),
       {
         headers: {
           'User-Agent': 'Prayer Times App'
         }
       }
     );
-
+    
     if (!response.ok) {
       throw new Error('Failed to fetch location data');
     }
 
     const data = await response.json();
-    const address = data.address || {};
-
+    
+    // Get timezone from the browser
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
     const locationInfo: LocationInfo = {
-      city: address.city || address.town || address.village || '',
-      state: address.state || '',
-      country: address.country || '',
-      timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+      city: data.address?.city || data.address?.town || data.address?.village || 'Unknown Location',
+      state: data.address?.state || '',
+      timezone,
+      country: data.address?.country || ''
     };
 
-    // Cache the result
-    geocodingCache.set(cacheKey, {
-      data: locationInfo,
-      timestamp: Date.now()
-    });
-
+    geocodingCache.set(cacheKey, locationInfo);
     return locationInfo;
   } catch (error) {
-    console.error('Error fetching location data:', error);
-    throw new Error('Failed to get location data');
+    console.error('Geocoding error:', error);
+    throw new Error('Failed to get location information');
   }
 }
 
@@ -81,7 +73,7 @@ async function getPrayerTimes(latitude: number, longitude: number, date: string,
         latitude: latitude.toString(),
         longitude: longitude.toString(),
         method: '2', // ISNA method
-        timezone: timezone
+        timezone
       })
     );
     
@@ -95,7 +87,7 @@ async function getPrayerTimes(latitude: number, longitude: number, date: string,
     prayerTimesCache.set(cacheKey, prayerTimes);
     return prayerTimes;
   } catch (error) {
-    console.error('Error fetching prayer times:', error);
+    console.error('Prayer times error:', error);
     throw new Error('Failed to get prayer times');
   }
 }
@@ -104,9 +96,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const latitude = parseFloat(searchParams.get('latitude') || '');
   const longitude = parseFloat(searchParams.get('longitude') || '');
-  const method = parseInt(searchParams.get('method') || '2');
-  const school = parseInt(searchParams.get('school') || '0');
-  const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
+  
+  // Get current date in YYYY-MM-DD format
+  const today = new Date();
+  const date = today.toISOString().split('T')[0];
 
   if (isNaN(latitude) || isNaN(longitude)) {
     return NextResponse.json(
@@ -124,7 +117,7 @@ export async function GET(request: Request) {
       latitude, 
       longitude, 
       date,
-      locationInfo.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+      locationInfo.timezone
     );
 
     return NextResponse.json({
@@ -132,7 +125,7 @@ export async function GET(request: Request) {
       location: locationInfo
     });
   } catch (error) {
-    console.error('API Error:', error);
+    console.error('API error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch data' },
       { status: 500 }

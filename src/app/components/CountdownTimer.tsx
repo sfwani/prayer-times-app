@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { parse } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 
 interface CountdownTimerProps {
