@@ -196,7 +196,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D1117] text-white p-8">
+    <div className="min-h-screen bg-[#0D1117] text-white p-8" style={{ transform: 'scale(0.85)', transformOrigin: 'top center' }}>
       <div className="max-w-2xl mx-auto flex flex-col items-center space-y-8">
         {/* Prayer Times Display */}
         <div className="w-full bg-[#1C2128] rounded-lg p-8">
