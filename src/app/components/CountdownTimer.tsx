@@ -63,7 +63,7 @@ export default function CountdownTimer({ targetTime, prayerName, arabicPrayerNam
         </div>
 
         <div>
-          <div className="relative -top-[4px] text-xs text-gray-500/60 font-[300] tracking-[0.05em] uppercase mb-3">at</div>
+          <div className="relative -top-[5px] text-xs text-gray-500/60 font-[300] tracking-[0.05em] uppercase mb-3">at</div>
           <div className="text-2xl tracking-[0.02em] text-[#9AB17D] font-[400]">
             {formattedTime}
           </div>

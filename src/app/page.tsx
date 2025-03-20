@@ -239,7 +239,7 @@ export default function Home() {
                   {format(new Date(), 'h:mm a')}
                 </div>
                 <p className="text-sm text-gray-400 tracking-[0.02em] font-[300]">
-                  {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
+                  {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `  •  ${state.hijriDate}`}
                 </p>
                 {state.timezone && (
                   <p className="text-xs text-gray-500 mt-1 tracking-[0.02em] font-[300]">

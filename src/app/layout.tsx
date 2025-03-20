@@ -17,8 +17,19 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: "Prayer Times App",
-  description: "Islamic prayer times application",
+  title: 'Prayer Times',
+  description: 'Islamic prayer times application with accurate calculations and beautiful interface',
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icon-192x192.png' },
+    ],
+  },
+  themeColor: '#9AB17D',
 };
 
 export default function RootLayout({
