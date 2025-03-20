@@ -1,31 +1,41 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { differenceInSeconds, parse, format } from 'date-fns';
+import { parse } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 
 interface CountdownTimerProps {
   targetTime: string;
   prayerName: string;
   arabicPrayerName: string;
+  timezone: string;
 }
 
-export default function CountdownTimer({ targetTime, prayerName, arabicPrayerName }: CountdownTimerProps) {
+export default function CountdownTimer({ targetTime, prayerName, arabicPrayerName, timezone }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const now = new Date();
-      const target = parse(targetTime, 'HH:mm', now);
+      const currentTimeInZone = formatInTimeZone(now, timezone, 'HH:mm');
       
-      // If target is in the past, add 24 hours
-      if (target < now) {
-        target.setDate(target.getDate() + 1);
+      // Parse target and current time into minutes
+      const [targetHours, targetMinutes] = targetTime.split(':').map(Number);
+      const [currentHours, currentMinutes] = currentTimeInZone.split(':').map(Number);
+      
+      let targetTotalMinutes = targetHours * 60 + targetMinutes;
+      const currentTotalMinutes = currentHours * 60 + currentMinutes;
+      
+      // If target is earlier than current time, add 24 hours
+      if (targetTotalMinutes <= currentTotalMinutes) {
+        targetTotalMinutes += 24 * 60;
       }
       
-      const diffInSeconds = differenceInSeconds(target, now);
-      const hours = Math.floor(diffInSeconds / 3600);
-      const minutes = Math.floor((diffInSeconds % 3600) / 60);
-      const seconds = diffInSeconds % 60;
+      // Calculate difference
+      const diffMinutes = targetTotalMinutes - currentTotalMinutes;
+      const hours = Math.floor(diffMinutes / 60);
+      const minutes = diffMinutes % 60;
+      const seconds = 59 - now.getSeconds();
       
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
@@ -38,10 +48,13 @@ export default function CountdownTimer({ targetTime, prayerName, arabicPrayerNam
     setTimeLeft(calculateTimeLeft());
 
     return () => clearInterval(timer);
-  }, [targetTime]);
+  }, [targetTime, timezone]);
 
   // Convert 24h time to 12h format
-  const formattedTime = format(parse(targetTime, 'HH:mm', new Date()), 'h:mm a');
+  const [hours, minutes] = targetTime.split(':').map(Number);
+  const period = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const formattedTime = `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
 
   return (
     <div className="text-center bg-[#2D333B] rounded-lg p-6">

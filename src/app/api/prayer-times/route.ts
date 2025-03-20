@@ -24,51 +24,50 @@ function cleanupCache() {
 async function getGeocodingData(latitude: number, longitude: number): Promise<LocationInfo> {
   const cacheKey = `${latitude},${longitude}`;
   
-  const cachedEntry = geocodingCache.get(cacheKey);
-  if (cachedEntry && (Date.now() - cachedEntry.timestamp) < CACHE_DURATION) {
-    return cachedEntry.data;
+  // Check cache first
+  const cachedData = geocodingCache.get(cacheKey);
+  if (cachedData && Date.now() - cachedData.timestamp < CACHE_DURATION) {
+    return cachedData.data;
   }
 
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
       {
         headers: {
           'User-Agent': 'Prayer Times App'
         }
       }
     );
-    
+
     if (!response.ok) {
       throw new Error('Failed to fetch location data');
     }
 
     const data = await response.json();
-    const address: GeocodingAddress = data.address;
+    const address = data.address || {};
 
     const locationInfo: LocationInfo = {
-      city: address.city || address.town || address.village || address.suburb || address.residential || address.municipality || 'Unknown',
-      state: address.state || address.county || 'Unknown',
-      coordinates: {
-        latitude,
-        longitude
-      }
+      city: address.city || address.town || address.village || '',
+      state: address.state || '',
+      country: address.country || '',
+      timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
     };
 
+    // Cache the result
     geocodingCache.set(cacheKey, {
       data: locationInfo,
       timestamp: Date.now()
     });
 
-    cleanupCache();
     return locationInfo;
   } catch (error) {
-    console.error('Error fetching geocoding data:', error);
-    throw new Error('Failed to get location information');
+    console.error('Error fetching location data:', error);
+    throw new Error('Failed to get location data');
   }
 }
 
-async function getPrayerTimes(latitude: number, longitude: number, date: string): Promise<PrayerTimesResponse> {
+async function getPrayerTimes(latitude: number, longitude: number, date: string, timezone: string): Promise<PrayerTimesResponse> {
   const cacheKey = `${latitude},${longitude},${date}`;
   
   if (prayerTimesCache.has(cacheKey)) {
@@ -77,7 +76,13 @@ async function getPrayerTimes(latitude: number, longitude: number, date: string)
 
   try {
     const response = await fetch(
-      `http://api.aladhan.com/v1/timings/${date}?latitude=${latitude}&longitude=${longitude}&method=2`
+      `http://api.aladhan.com/v1/timings/${date}?` +
+      new URLSearchParams({
+        latitude: latitude.toString(),
+        longitude: longitude.toString(),
+        method: '2', // ISNA method
+        timezone: timezone
+      })
     );
     
     if (!response.ok) {
@@ -99,6 +104,8 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const latitude = parseFloat(searchParams.get('latitude') || '');
   const longitude = parseFloat(searchParams.get('longitude') || '');
+  const method = parseInt(searchParams.get('method') || '2');
+  const school = parseInt(searchParams.get('school') || '0');
   const date = searchParams.get('date') || new Date().toISOString().split('T')[0];
 
   if (isNaN(latitude) || isNaN(longitude)) {
@@ -109,10 +116,16 @@ export async function GET(request: Request) {
   }
 
   try {
-    const [locationInfo, prayerTimes] = await Promise.all([
-      getGeocodingData(latitude, longitude),
-      getPrayerTimes(latitude, longitude, date)
-    ]);
+    // First get the location info to get the timezone
+    const locationInfo = await getGeocodingData(latitude, longitude);
+    
+    // Then get prayer times with the correct timezone
+    const prayerTimes = await getPrayerTimes(
+      latitude, 
+      longitude, 
+      date,
+      locationInfo.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
+    );
 
     return NextResponse.json({
       prayerTimes,

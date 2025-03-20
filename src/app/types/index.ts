@@ -28,7 +28,8 @@ export interface Location {
 export interface LocationInfo {
   city: string;
   state: string;
-  coordinates: Location;
+  country: string;
+  timezone: string;
 }
 
 // API Response Types

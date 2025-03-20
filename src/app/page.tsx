@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { format, parse, isBefore } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import CalculationMethodSelector from './components/CalculationMethodSelector';
 import CountdownTimer from './components/CountdownTimer';
 import { 
@@ -62,28 +63,43 @@ const initialState: AppState = {
   nextPrayer: null
 };
 
-const getNextPrayer = (prayerTimes: PrayerTimes): { name: string; time: string } | null => {
+const getNextPrayer = (prayerTimes: PrayerTimes, timezone: string): { name: string; time: string } | null => {
   const now = new Date();
-  const prayers = Object.entries(prayerTimes);
-  const todayPrayers = prayers.map(([name, time]) => ({
-    name: name,
-    time: parse(time, 'HH:mm', now)
-  }));
+  const currentTimeInZone = formatInTimeZone(now, timezone, 'HH:mm');
+  
+  // Convert all prayer times to comparable format
+  const prayers = Object.entries(prayerTimes).map(([name, time]) => {
+    const [hours, minutes] = time.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes;
+    
+    return {
+      name,
+      time,
+      totalMinutes
+    };
+  });
+
+  // Sort prayers by time
+  prayers.sort((a, b) => a.totalMinutes - b.totalMinutes);
+
+  // Convert current time to minutes for comparison
+  const [currentHours, currentMinutes] = currentTimeInZone.split(':').map(Number);
+  const currentTotalMinutes = currentHours * 60 + currentMinutes;
 
   // Find the next prayer
-  const nextPrayer = todayPrayers.find(prayer => isBefore(now, prayer.time));
-  
+  const nextPrayer = prayers.find(prayer => prayer.totalMinutes > currentTotalMinutes);
+
   if (nextPrayer) {
     return {
       name: nextPrayer.name,
-      time: format(nextPrayer.time, 'HH:mm')
+      time: nextPrayer.time // Return the original time string from the table
     };
   }
 
   // If no next prayer today, return first prayer of next day
   return {
-    name: todayPrayers[0].name,
-    time: format(todayPrayers[0].time, 'HH:mm')
+    name: prayers[0].name,
+    time: prayers[0].time // Return the original time string from the table
   };
 };
 
@@ -95,6 +111,27 @@ const to12HourFormat = (time: string): string => {
 
 export default function Home() {
   const [state, setState] = useState<AppState>(initialState);
+
+  // Add a new useEffect to update next prayer periodically
+  useEffect(() => {
+    if (!state.prayerTimes || !state.timezone) return;
+
+    const updateNextPrayer = () => {
+      const nextPrayer = getNextPrayer(state.prayerTimes!, state.timezone!);
+      setState(prev => ({
+        ...prev,
+        nextPrayer
+      }));
+    };
+
+    // Update immediately
+    updateNextPrayer();
+
+    // Then update every minute
+    const interval = setInterval(updateNextPrayer, 60000);
+
+    return () => clearInterval(interval);
+  }, [state.prayerTimes, state.timezone]); // Re-run when prayer times or timezone changes
 
   const fetchPrayerTimes = useCallback(async (latitude: number, longitude: number) => {
     try {
@@ -118,15 +155,6 @@ export default function Home() {
       }
 
       const apiResponse = data as CombinedApiResponse;
-      
-      const nextPrayer = getNextPrayer({
-        fajr: apiResponse.prayerTimes.timings.Fajr,
-        sunrise: apiResponse.prayerTimes.timings.Sunrise,
-        dhuhr: apiResponse.prayerTimes.timings.Dhuhr,
-        asr: apiResponse.prayerTimes.timings.Asr,
-        maghrib: apiResponse.prayerTimes.timings.Maghrib,
-        isha: apiResponse.prayerTimes.timings.Isha
-      });
 
       setState(prev => ({
         ...prev,
@@ -146,14 +174,10 @@ export default function Home() {
           city: apiResponse.location.city,
           state: apiResponse.location.state
         },
-        timezone: apiResponse.prayerTimes.meta.timezone,
-        nextPrayer
+        timezone: apiResponse.prayerTimes.meta.timezone
       }));
     } catch (error) {
-      // Log the error for debugging
       console.error('Failed to fetch prayer times:', error);
-      
-      // Set the error state with a more descriptive message
       setState(prev => ({
         ...prev,
         error: {
@@ -245,6 +269,7 @@ export default function Home() {
                     targetTime={state.nextPrayer.time}
                     prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
                     arabicPrayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.arabic}
+                    timezone={state.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone}
                   />
                 </div>
               )}
@@ -269,10 +294,18 @@ export default function Home() {
 
               <div className="text-center pt-4 border-t border-[#2D333B]">
                 <div className="text-2xl font-[500] text-white mb-2 tracking-[0.02em]">
-                  {format(new Date(), 'h:mm a')}
+                  {state.timezone ? formatInTimeZone(
+                    new Date(),
+                    state.timezone,
+                    'h:mm a'
+                  ) : format(new Date(), 'h:mm a')}
                 </div>
                 <p className="text-sm text-gray-400 tracking-[0.02em] font-[300]">
-                  {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `  •  ${state.hijriDate}`}
+                  {state.timezone ? formatInTimeZone(
+                    new Date(),
+                    state.timezone,
+                    'EEEE, MMMM d, yyyy'
+                  ) : format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `  •  ${state.hijriDate}`}
                 </p>
                 {state.timezone && (
                   <p className="text-xs text-gray-500 mt-1 tracking-[0.02em] font-[300]">
