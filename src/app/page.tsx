@@ -202,37 +202,41 @@ export default function Home() {
             <p className="text-gray-400 text-center">Please select your location to view prayer times</p>
           ) : (
             <>
-              <div className="text-center text-gray-400 mb-4">
-                <p className="mb-2">
-                  {format(new Date(), 'EEEE, MMMM d, yyyy')} | {format(new Date(), 'h:mm a')} {state.hijriDate && `| ${state.hijriDate}`}
-                </p>
-                <p className="mb-2">
-                  {state.location && state.cityInfo && (
-                    <>
-                      {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''} | {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
-                    </>
-                  )}
-                </p>
-                {state.timezone && (
-                  <p className="text-sm text-gray-500">
-                    Timezone: {state.timezone}
+              <div className="text-center mb-6">
+                <div className="bg-[#2D333B] rounded-lg p-6 mb-4">
+                  <div className="text-4xl font-mono text-white mb-2">
+                    {format(new Date(), 'h:mm a')}
+                  </div>
+                  <p className="text-gray-400">
+                    {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
                   </p>
+                  {state.timezone && (
+                    <p className="text-sm text-gray-500 mt-1">
+                      Timezone: {state.timezone}
+                    </p>
+                  )}
+                </div>
+
+                {state.nextPrayer && (
+                  <CountdownTimer
+                    targetTime={state.nextPrayer.time}
+                    prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
+                  />
                 )}
               </div>
 
-              {state.nextPrayer && (
-                <CountdownTimer
-                  targetTime={state.nextPrayer.time}
-                  prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
-                />
-              )}
-
               {state.prayerTimes && (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {Object.entries(state.prayerTimes).map(([prayer, time]) => (
-                    <div key={prayer} className="grid grid-cols-3 items-center">
+                    <div key={prayer} 
+                      className={`grid grid-cols-3 items-center p-3 rounded-lg transition-colors ${
+                        state.nextPrayer?.name.toLowerCase() === prayer.toLowerCase() 
+                          ? 'bg-[#2D333B] shadow-lg' 
+                          : 'hover:bg-[#2D333B]'
+                      }`}
+                    >
                       <span className="text-xl text-gray-200">{PRAYER_NAMES[prayer.toLowerCase()]?.latin}</span>
-                      <span className="text-xl text-gray-400 text-center">{time}</span>
+                      <span className="text-xl text-gray-400 text-center font-mono">{time}</span>
                       <span className="text-xl text-gray-200 text-right font-arabic">{PRAYER_NAMES[prayer.toLowerCase()]?.arabic}</span>
                     </div>
                   ))}
@@ -246,16 +250,28 @@ export default function Home() {
         <div className="w-full space-y-4">
           <button 
             onClick={handleUseCurrentLocation}
-            className="w-full bg-[#1A6ED8] text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors text-lg"
+            className="w-full bg-[#1A6ED8] text-white py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors shadow-lg"
           >
-            Use Current Location
+            {state.location && state.cityInfo ? (
+              <div className="text-center">
+                <div className="text-lg">
+                  {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''}
+                </div>
+                <div className="text-sm text-blue-200">
+                  {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
+                </div>
+              </div>
+            ) : (
+              <span className="text-lg">Use Current Location</span>
+            )}
           </button>
 
           <button
             onClick={() => setState(prev => ({ ...prev, showSettings: !prev.showSettings }))}
-            className="text-blue-400 hover:text-blue-300 text-center w-full text-sm"
+            className="flex items-center justify-center w-full px-4 py-2 text-sm text-blue-400 hover:text-blue-300 transition-colors rounded-lg hover:bg-[#2D333B]"
           >
-            change from {CALCULATION_METHOD_CONFIGS[state.calculationMethod as CalculationMethodKey].name} ({ASR_METHOD_CONFIGS[state.asrMethod as AsrMethodKey].name})
+            <span>Using: {CALCULATION_METHOD_CONFIGS[state.calculationMethod as CalculationMethodKey].name}</span>
+            <span className="text-gray-500 ml-2">({ASR_METHOD_CONFIGS[state.asrMethod as AsrMethodKey].name})</span>
           </button>
 
           {state.showSettings && (
