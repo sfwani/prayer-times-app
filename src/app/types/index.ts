@@ -29,7 +29,7 @@ export interface LocationInfo {
   city: string;
   state: string;
   timezone: string;
-  country?: string;
+  country: string | undefined;
 }
 
 // API Response Types

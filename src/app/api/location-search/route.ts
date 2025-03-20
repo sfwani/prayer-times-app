@@ -23,8 +23,8 @@ interface SearchResult {
   display_name: string;
   address: {
     city: string;
-    state?: string;
-    country?: string;
+    state: string | undefined;
+    country: string | undefined;
   };
 }
 

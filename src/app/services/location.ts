@@ -5,6 +5,8 @@ interface IPLocationResponse {
   longitude: number;
   city: string;
   state: string;
+  country: string | undefined;
+  timezone: string;
 }
 
 export async function getLocationFromIP(): Promise<IPLocationResponse | null> {
@@ -21,7 +23,9 @@ export async function getLocationFromIP(): Promise<IPLocationResponse | null> {
       latitude: data.latitude,
       longitude: data.longitude,
       city: data.city,
-      state: data.state
+      state: data.state,
+      country: data.country,
+      timezone: data.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone
     };
   } catch (error) {
     console.error('IP Geolocation failed:', error);
