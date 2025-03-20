@@ -9,10 +9,10 @@ const roboto = Roboto({
 });
 
 export const viewport: Viewport = {
-  initialScale: 0.6,
-  minimumScale: 0.6,
-  maximumScale: 5.0,
   width: 'device-width',
+  initialScale: 1.0,
+  minimumScale: 1.0,
+  maximumScale: 5.0,
   userScalable: true,
 }
 
