@@ -222,4 +222,17 @@ export const CALCULATION_METHOD_VALUES: { [K in CalculationMethodKey]: number } 
 export const ASR_METHOD_VALUES: { [K in AsrMethodKey]: number } = {
   standard: 0,
   hanafi: 1
-}; 
+};
+
+// Geocoding Types
+export interface GeocodingAddress {
+  city?: string;
+  town?: string;
+  village?: string;
+  suburb?: string;
+  municipality?: string;
+  residential?: string;
+  county?: string;
+  state?: string;
+  country?: string;
+} 
