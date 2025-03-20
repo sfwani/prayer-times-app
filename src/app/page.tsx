@@ -148,12 +148,17 @@ export default function Home() {
         timezone: apiResponse.prayerTimes.meta.timezone,
         nextPrayer
       }));
-    } catch (_error) {
-      console.error('Failed to fetch prayer times:', _error);
+    } catch (error) {
+      // Log the error for debugging
+      console.error('Failed to fetch prayer times:', error);
+      
+      // Set the error state with a more descriptive message
       setState(prev => ({
         ...prev,
         error: {
-          message: _error instanceof Error ? _error.message : 'Failed to fetch prayer times',
+          message: error instanceof Error 
+            ? `Failed to fetch prayer times: ${error.message}`
+            : 'Failed to fetch prayer times',
           code: 'FETCH_ERROR',
           status: 500
         }
@@ -181,11 +186,14 @@ export default function Home() {
         },
         error: null
       }));
-    } catch (_error) {
+    } catch (error) {
+      console.error('Location error:', error);
       setState(prev => ({
         ...prev,
         error: {
-          message: 'Error getting location. Please enable location services.',
+          message: error instanceof Error 
+            ? `Location error: ${error.message}`
+            : 'Error getting location. Please enable location services.',
           code: 'GEOLOCATION_ERROR',
           status: 400
         }
