@@ -174,8 +174,34 @@ export default function Home() {
 
   const handleUseCurrentLocation = async () => {
     try {
+      if (!navigator.geolocation) {
+        throw new Error('Geolocation is not supported by your browser');
+      }
+
       const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject);
+        navigator.geolocation.getCurrentPosition(
+          resolve,
+          (error) => {
+            switch (error.code) {
+              case error.PERMISSION_DENIED:
+                reject(new Error('Location permission denied. Please enable location services in your browser settings.'));
+                break;
+              case error.POSITION_UNAVAILABLE:
+                reject(new Error('Location information is unavailable. Please try again.'));
+                break;
+              case error.TIMEOUT:
+                reject(new Error('Location request timed out. Please try again.'));
+                break;
+              default:
+                reject(new Error('An unknown error occurred while getting location.'));
+            }
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
       });
       
       setState(prev => ({
@@ -187,12 +213,12 @@ export default function Home() {
         error: null
       }));
     } catch (error) {
-      console.error('Location error:', error);
+      console.error('Location error:', error instanceof Error ? error.message : 'Unknown error');
       setState(prev => ({
         ...prev,
         error: {
           message: error instanceof Error 
-            ? `Location error: ${error.message}`
+            ? error.message 
             : 'Error getting location. Please enable location services.',
           code: 'GEOLOCATION_ERROR',
           status: 400
