@@ -6,9 +6,10 @@ import { differenceInSeconds, parse, format } from 'date-fns';
 interface CountdownTimerProps {
   targetTime: string;
   prayerName: string;
+  arabicPrayerName: string;
 }
 
-export default function CountdownTimer({ targetTime, prayerName }: CountdownTimerProps) {
+export default function CountdownTimer({ targetTime, prayerName, arabicPrayerName }: CountdownTimerProps) {
   const [timeLeft, setTimeLeft] = useState<string>('');
 
   useEffect(() => {
@@ -43,16 +44,29 @@ export default function CountdownTimer({ targetTime, prayerName }: CountdownTime
   const formattedTime = format(parse(targetTime, 'HH:mm', new Date()), 'h:mm a');
 
   return (
-    <div className="text-center bg-[#2D333B] rounded-lg p-8">
-      <div className="space-y-6">
+    <div className="text-center bg-[#2D333B] rounded-lg p-6">
+      <div className="space-y-5">
         <div>
-          <span className="text-2xl text-gray-400 tracking-wider font-light capitalize">{prayerName} in</span>
+          <div className="text-xs text-gray-500/60 font-[300] tracking-[0.05em] uppercase mb-2">next prayer</div>
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-2xl text-[#9AB17D] tracking-[0.05em] font-[400]">{prayerName}</span>
+            <span className="text-sm text-gray-500 tracking-[0.02em] font-[300] opacity-60">•</span>
+            <span className="text-2xl text-[#9AB17D] tracking-[0.05em] font-arabic">{arabicPrayerName}</span>
+          </div>
         </div>
-        <div className="font-mono text-5xl tracking-wider text-[#9AB17D] font-light">
-          {timeLeft}
+        
+        <div>
+          <div className="text-xs text-gray-500/60 font-[300] tracking-[0.05em] uppercase mb-3">in</div>
+          <div className="text-6xl tracking-[0.02em] text-[#9AB17D] font-[500]">
+            {timeLeft}
+          </div>
         </div>
-        <div className="text-sm text-gray-500 tracking-wide font-light">
-          at {formattedTime}
+
+        <div>
+          <div className="text-xs text-gray-500/60 font-[300] tracking-[0.05em] uppercase mb-3">at</div>
+          <div className="text-2xl tracking-[0.02em] text-[#9AB17D] font-[400]">
+            {formattedTime}
+          </div>
         </div>
       </div>
     </div>

@@ -27,12 +27,12 @@ import {
 
 // Move constants outside component
 const PRAYER_NAMES: Record<string, PrayerName> = {
-  fajr: { latin: 'fajr', arabic: 'الفجر' },
-  sunrise: { latin: 'sunrise', arabic: 'الشروق' },
-  dhuhr: { latin: 'dhuhr', arabic: 'الظهر' },
-  asr: { latin: 'asr', arabic: 'العصر' },
-  maghrib: { latin: 'maghrib', arabic: 'المغرب' },
-  isha: { latin: 'isha', arabic: 'العشاء' }
+  fajr: { latin: 'Fajr', arabic: 'الفجر' },
+  sunrise: { latin: 'Sunrise', arabic: 'الشروق' },
+  dhuhr: { latin: 'Dhuhr', arabic: 'الظهر' },
+  asr: { latin: 'Asr', arabic: 'العصر' },
+  maghrib: { latin: 'Maghrib', arabic: 'المغرب' },
+  isha: { latin: 'Isha', arabic: 'العشاء' }
 };
 
 interface AppState {
@@ -211,6 +211,7 @@ export default function Home() {
                   <CountdownTimer
                     targetTime={state.nextPrayer.time}
                     prayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.latin || state.nextPrayer.name}
+                    arabicPrayerName={PRAYER_NAMES[state.nextPrayer.name.toLowerCase()]?.arabic}
                   />
                 </div>
               )}
@@ -225,8 +226,8 @@ export default function Home() {
                           : 'hover:bg-[#2D333B]'
                       }`}
                     >
-                      <span className="text-xl text-gray-200 font-light tracking-wide">{PRAYER_NAMES[prayer.toLowerCase()]?.latin}</span>
-                      <span className="text-xl text-gray-400 text-center font-light tracking-wider">{to12HourFormat(time)}</span>
+                      <span className="text-xl text-gray-200 font-[400] tracking-[0.02em]">{PRAYER_NAMES[prayer.toLowerCase()]?.latin}</span>
+                      <span className="text-xl text-gray-400 text-center font-[300] tracking-[0.02em]">{to12HourFormat(time)}</span>
                       <span className="text-xl text-gray-200 text-right font-arabic">{PRAYER_NAMES[prayer.toLowerCase()]?.arabic}</span>
                     </div>
                   ))}
@@ -234,14 +235,14 @@ export default function Home() {
               )}
 
               <div className="text-center pt-4 border-t border-[#2D333B]">
-                <div className="text-2xl font-light text-white mb-2 tracking-wider">
+                <div className="text-2xl font-[500] text-white mb-2 tracking-[0.02em]">
                   {format(new Date(), 'h:mm a')}
                 </div>
-                <p className="text-sm text-gray-400 tracking-wide font-light">
+                <p className="text-sm text-gray-400 tracking-[0.02em] font-[300]">
                   {format(new Date(), 'EEEE, MMMM d, yyyy')} {state.hijriDate && `| ${state.hijriDate}`}
                 </p>
                 {state.timezone && (
-                  <p className="text-xs text-gray-500 mt-1 tracking-wide font-light">
+                  <p className="text-xs text-gray-500 mt-1 tracking-[0.02em] font-[300]">
                     {state.timezone.replace('_', ' ')}
                   </p>
                 )}
@@ -258,10 +259,10 @@ export default function Home() {
           >
             {state.location && state.cityInfo ? (
               <div className="text-center">
-                <div className="text-lg font-light tracking-wide">
+                <div className="text-lg font-[400] tracking-[0.02em]">
                   {state.cityInfo.city}{state.cityInfo.state ? `, ${state.cityInfo.state}` : ''}
                 </div>
-                <div className="text-sm text-[#DFE9D2] font-light tracking-wide">
+                <div className="text-sm text-[#DFE9D2] font-[300] tracking-[0.02em]">
                   {state.location.latitude.toFixed(4)}°, {state.location.longitude.toFixed(4)}°
                 </div>
               </div>
